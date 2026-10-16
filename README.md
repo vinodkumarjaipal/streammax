@@ -14,7 +14,7 @@
 
   <br />
 
-  **[🌐 Live Site (streammax.com)](https://streammax.com)** • **[👨‍💻 Developer Portfolio](https://vinodkumarjaipal.github.io/)** • **[🐙 GitHub Profile](https://github.com/vinodkumarjaipal)**
+  **[🌐 Live Site (streammax.com)](https://streammax-official.vercel.app/)** • **[👨‍💻 Developer Portfolio](https://vinodkumarjaipal.github.io/)** • **[🐙 GitHub Profile](https://github.com/vinodkumarjaipal)**
 
 </div>
 
