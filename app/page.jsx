@@ -40,7 +40,7 @@ export default async function Home() {
   // Select a hero item from trending that has a backdrop image
   const heroPool = (trending || []).filter((item) => item.backdrop_path);
   const heroItem = heroPool.length > 0 
-    ? heroPool[Math.floor(Math.random() * heroPool.length)] 
+    ? heroPool[0] 
     : (trending && trending[0] ? trending[0] : null);
 
   const heroMediaType = heroItem?.media_type || (heroItem?.title ? "movie" : "tv");
@@ -92,10 +92,11 @@ export default async function Home() {
                 </svg>
                 Watch Now
               </Link>
-              <Link
-                href={`/${heroMediaType === "tv" ? "tv" : "movie"}/${heroItem.id}`}
-                className="flex items-center gap-2 bg-gray-800/80 hover:bg-gray-700/80 text-white border border-gray-600/50 backdrop-blur-md px-5 sm:px-7 py-2.5 sm:py-3.5 rounded-xl font-bold text-sm sm:text-base transition-all"
-              >
+            <Link
+  href={`/${heroMediaType === "tv" ? "tv" : "movie"}/${heroItem.id}`}
+  aria-label={`More Info about ${heroTitle}`}
+  className="flex items-center gap-2 bg-gray-800/80..."
+>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>

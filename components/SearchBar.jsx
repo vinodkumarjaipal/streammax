@@ -27,7 +27,8 @@ export default function SearchBar() {
       <button
         type="submit"
         aria-label="Submit search"
-        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#dc2626] text-xs sm:text-sm transition-colors"
+        aria-describedby="search-description"
+        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#dc2626] text-xs sm:text-sm transition-colors p-2"
       >
         🔍
       </button>

@@ -7,6 +7,55 @@ import MovieCard from "@/components/MovieCard";
 import { getItemDetails } from "@/lib/api";
 import { getMediaDetails, getFullLanguageName } from "@/lib/tmdb";
 
+// Dynamic Dynamic Metadata for Search Engines
+export async function generateMetadata({ params }) {
+  const resolvedParams = await params;
+  const { type = "movie", id } = resolvedParams || {};
+
+  if (!id) return { title: "Title Not Found" };
+
+  let mediaData = null;
+  try {
+    mediaData = await getItemDetails(id, type);
+  } catch (err) {
+    // Ignore error for fallback
+  }
+
+  if (!mediaData && !isNaN(id)) {
+    try {
+      mediaData = await getMediaDetails(id, type);
+    } catch (err) {
+      // Ignore fallback error
+    }
+  }
+
+  if (!mediaData) {
+    return { title: "Title Not Found" };
+  }
+
+  const title = mediaData.title || mediaData.name || "Watch Stream";
+  const overview = mediaData.overview
+    ? mediaData.overview.slice(0, 160)
+    : `Stream ${title} in HD with multi-audio and subtitles on StreamMax.`;
+  const poster = mediaData.poster || (mediaData.poster_path ? `https://image.tmdb.org/t/p/w500${mediaData.poster_path}` : null);
+
+  return {
+    title: `${title} - Watch Free in HD`,
+    description: overview,
+    openGraph: {
+      title: `${title} | StreamMax`,
+      description: overview,
+      images: poster ? [{ url: poster }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} | StreamMax`,
+      description: overview,
+      images: poster ? [poster] : [],
+    },
+  };
+}
+
 export default async function WatchPage({ params }) {
   const resolvedParams = await params;
   const { type = "movie", id } = resolvedParams || {};
@@ -55,7 +104,7 @@ export default async function WatchPage({ params }) {
         <span className="text-5xl mb-4">🎬</span>
         <h1 className="text-2xl font-bold mb-2">Title Not Found</h1>
         <p className="text-gray-400 text-sm max-w-md mb-6">
-          We couldn't load media details for this item. It might have been removed or the ID is invalid.
+          We couldn&apos;t load media details for this item. It might have been removed or the ID is invalid.
         </p>
         <Link
           href="/"
@@ -74,8 +123,34 @@ export default async function WatchPage({ params }) {
   const language = getFullLanguageName(mediaData.originalLanguage || mediaData.original_language);
   const seasons = mediaData.seasons || [];
 
+  // Structured Data / Rich Snippets Schema for Google
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": isTV ? "TVSeries" : "Movie",
+    name: title,
+    description: mediaData.overview || "",
+    image: mediaData.poster ? [mediaData.poster] : [],
+    datePublished: mediaData.releaseDate || mediaData.release_date || undefined,
+    aggregateRating:
+      rating !== "N/A"
+        ? {
+            "@type": "AggregateRating",
+            ratingValue: rating,
+            bestRating: "10",
+            worstRating: "1",
+            ratingCount: 100,
+          }
+        : undefined,
+  };
+
   return (
     <main className="min-h-screen bg-[#0b0c10] text-white pt-24 pb-20 px-4 sm:px-6 md:px-12 lg:px-16">
+      {/* Google Rich Snippets JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* TOP NAVIGATION BREADCRUMB */}

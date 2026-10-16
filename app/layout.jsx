@@ -2,9 +2,44 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 
 export const metadata = {
-  title: "StreamMax - Watch Movies, TV Shows & Anime in HD",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://streammax-official.vercel.app"),
+  title: {
+    default: "StreamMax - Watch Movies, TV Shows & Anime in HD",
+    template: "%s | StreamMax",
+  },
   description: "Stream and download blockbuster movies, K-Dramas, Bollywood, Hollywood, anime and Turkish series with multi-audio and subtitles.",
-    icons: {
+  keywords: ["movies", "tv shows", "anime", "k-drama", "streaming", "watch free movies", "streammax"],
+  authors: [{ name: "StreamMax Team" }],
+  creator: "StreamMax",
+  publisher: "StreamMax",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: "./",
+  },
+  openGraph: {
+    title: "StreamMax - Watch Movies, TV Shows & Anime in HD",
+    description: "Stream and download blockbuster movies, K-Dramas, Bollywood, Hollywood, anime and Turkish series.",
+    url: "https://streammax.vercel.app",
+    siteName: "StreamMax",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "StreamMax - Watch Movies, TV Shows & Anime in HD",
+    description: "Stream and download blockbuster movies, K-Dramas, Bollywood, Hollywood, anime and Turkish series.",
+  },
+  icons: {
     icon: [
       { url: "/favicon.ico" },
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
@@ -17,8 +52,8 @@ export const metadata = {
     ],
   },
   manifest: "/site.webmanifest",
-    };
-  export const viewport = {
+};
+export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -34,12 +69,12 @@ export default function RootLayout({ children }) {
         </main>
         
         {/* FOOTER */}
-        <footer className="border-t border-gray-800/80 bg-[#07080b] py-10 px-4 sm:px-8 text-center text-xs text-gray-500">
+        <footer className="border-t border-gray-800/80 bg-[#07080b] py-10 px-4 sm:px-8 text-center text-xs text-gray-400">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-            <span className="font-bold text-gray-400">
+            <span className="font-bold text-gray-300">
               STREAM<span className="text-[#dc2626]">MAX</span> © {new Date().getFullYear()}
             </span>
-            <p className="max-w-md">
+            <p className="max-w-md text-gray-400">
               StreamMax does not host files on its servers. All videos and metadata are provided by third-party services.
             </p>
           </div>

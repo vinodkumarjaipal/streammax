@@ -13,8 +13,8 @@ export default function TrailerModal({ isOpen, onClose, mediaId, mediaType = "mo
   useEffect(() => {
     if (!isOpen || !mediaId) return;
 
-    let isMounted = true;
-    setLoading(true);
+   let isMounted = true;
+
 
     async function loadTrailer() {
       try {

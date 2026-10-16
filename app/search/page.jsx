@@ -375,7 +375,7 @@ function SearchContent() {
             </div>
             <h3 className="text-lg md:text-xl font-bold text-white mb-2">No Matching Titles Found</h3>
             <p className="text-gray-400 text-sm max-w-md mb-6">
-              We couldn't find anything matching your exact filter combination. Try resetting your origin or audio filter to explore more global titles.
+              <span id="search-description">We couldn&apos;t find anything matching your exact filter combination. Try resetting your origin or audio filter to explore more global titles.</span>
             </p>
             <button
               onClick={() => {

@@ -88,7 +88,7 @@ export default async function MoviePage({ params }) {
               </h1>
               {movie.tagline && (
                 <p className="text-gray-400 italic text-sm md:text-base mb-4">
-                  "{movie.tagline}"
+                  &quot;{movie.tagline}&quot;
                 </p>
               )}
 

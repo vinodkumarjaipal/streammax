@@ -19,11 +19,14 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close mobile menu on route change
-  useEffect(() => {
+useEffect(() => {
+  const timer = setTimeout(() => {
     setMobileMenuOpen(false);
-  }, [pathname]);
+  }, 0);
+  return () => clearTimeout(timer);
 
+  
+}, [pathname]);
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Movies", href: "/movies" },

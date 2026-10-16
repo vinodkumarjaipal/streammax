@@ -28,7 +28,7 @@ export default function ContentRow({ title, items = [], badge }) {
           {title}
         </h2>
         {badge && (
-          <span className="bg-[#dc2626]/20 text-[#dc2626] border border-[#dc2626]/30 text-[10px] md:text-xs font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
+          <span className="bg-[#dc2626]/20 text-red-400 border border-[#dc2626]/30 text-[10px] md:text-xs font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
             {badge}
           </span>
         )}

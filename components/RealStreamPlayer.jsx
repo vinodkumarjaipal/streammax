@@ -24,11 +24,13 @@ export default function RealStreamPlayer({
   const isImdb = cleanId.startsWith("tt");
   const isEpisodic = mediaType === "tv" || mediaType === "anime";
 
-  // Reset loading state when target media changes
-  useEffect(() => {
+// Reset loading state when target media changes
+useEffect(() => {
+  const timer = setTimeout(() => {
     setIsLoading(true);
-  }, [cleanId, season, episode, activeServerId]);
-
+  }, 0);
+  return () => clearTimeout(timer);
+}, [cleanId, season, episode, activeServerId]);
   // Dynamically generate high-uptime server URLs
   const servers = useMemo(() => {
     return [
@@ -146,7 +148,7 @@ export default function RealStreamPlayer({
               Connecting to {activeServer.name}...
             </p>
             <p className="text-xs mt-2 text-gray-500 font-medium">
-              If stream doesn't load in 5s, switch to another server below
+              If stream doesn&apos;t load in 5s, switch to another server below
             </p>
           </div>
         )}

@@ -74,7 +74,7 @@ export default async function TvShowDetailsPage({ params }) {
               </h1>
               {show.tagline && (
                 <p className="text-gray-400 italic text-sm md:text-base mb-4">
-                  "{show.tagline}"
+                  &quot;{show.tagline}&quot;
                 </p>
               )}
 
