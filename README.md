@@ -1,5 +1,3 @@
-<div align="center">
-
 # 🎬 StreamMax — Enterprise Streaming & Download Platform
 
 ![StreamMax Banner](./assets/banner.png)
@@ -204,7 +202,10 @@ streammax/
 ---
 ## 📽️ Application Demo
 
-<video src="./assets/demo.mp4" controls width="100%" poster="./assets/banner.png"></video>
+<div align="center">
+<video src="https://github.com/user-attachments/assets/045fd953-8b39-40ca-a88f-e16b4541d311" autoplay muted loop playsinline controls width="100%">
+  Your browser does not support the video tag.
+</video>
 
 ---
 
