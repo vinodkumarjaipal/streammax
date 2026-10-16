@@ -68,17 +68,24 @@ export default function RootLayout({ children }) {
           {children}
         </main>
         
-        {/* FOOTER */}
-        <footer className="border-t border-gray-800/80 bg-[#07080b] py-10 px-4 sm:px-8 text-center text-xs text-gray-400">
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-            <span className="font-bold text-gray-300">
-              STREAM<span className="text-[#dc2626]">MAX</span> © {new Date().getFullYear()}
-            </span>
-            <p className="max-w-md text-gray-400">
-              StreamMax does not host files on its servers. All videos and metadata are provided by third-party services.
-            </p>
-          </div>
-        </footer>
+      {/* FOOTER */}
+<footer className="border-t border-gray-800/80 bg-[#07080b] py-10 px-4 sm:px-8 text-center text-xs text-gray-300">
+  <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+      <span className="font-bold text-gray-200">
+        STREAM<span className="text-[#ef4444]">MAX</span> © {new Date().getFullYear()}
+      </span>
+      <span className="hidden sm:inline text-gray-600">•</span>
+      <span className="text-gray-300 font-medium">
+        Made with <span className="text-[#ef4444]">❤️</span> by <span className="text-white font-semibold">vkjaipal</span>
+      </span>
+    </div>
+
+    <p className="max-w-md text-gray-300 leading-relaxed">
+      StreamMax does not host files on its servers. All videos and metadata are provided by third-party services.
+    </p>
+  </div>
+</footer>
       </body>
     </html>
   );
