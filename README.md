@@ -202,7 +202,13 @@ streammax/
 - **Live Site:** [streammax.com](https://streammax.com)
 
 ---
+## 📽️ Application Demo
+
+<video src="./assets/demo.mp4" controls width="100%" poster="./assets/banner.png"></video>
+
+---
 
 ## 📜 License
 
 This project is licensed under the **MIT License** — feel free to use and modify it for learning and personal deployment.
+
