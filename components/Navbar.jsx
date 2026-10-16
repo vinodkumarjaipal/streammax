@@ -42,7 +42,7 @@ useEffect(() => {
           : "bg-gradient-to-b from-[#0b0c10]/95 via-[#0b0c10]/60 to-transparent py-4 sm:py-5"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3 sm:gap-6">
+      <div className="w-full px-4 sm:px-8 md:px-12 lg:px-16 flex items-center justify-between gap-3 sm:gap-6">
         
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-1 group shrink-0">

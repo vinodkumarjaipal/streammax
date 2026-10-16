@@ -144,7 +144,7 @@ export default async function WatchPage({ params }) {
   };
 
   return (
-    <main className="min-h-screen bg-[#0b0c10] text-white pt-24 pb-20 px-4 sm:px-6 md:px-12 lg:px-16">
+    <div className="min-h-screen bg-[#0b0c10] text-white pt-24 pb-20 px-4 sm:px-6 md:px-12 lg:px-16">
       {/* Google Rich Snippets JSON-LD */}
       <script
         type="application/ld+json"
@@ -288,6 +288,6 @@ export default async function WatchPage({ params }) {
         )}
 
       </div>
-    </main>
+    </div>
   );
 }

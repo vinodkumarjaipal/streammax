@@ -77,7 +77,7 @@ export default function RootLayout({ children }) {
       </span>
       <span className="hidden sm:inline text-gray-600">•</span>
       <span className="text-gray-300 font-medium">
-        Made with <span className="text-[#ef4444]">❤️</span> by <span className="text-white font-semibold">vkjaipal</span>
+        Made with <span className="text-[#ef4444]">❤️</span> by <span className="text-white font-semibold">V K JaiPal</span>
       </span>
     </div>
 

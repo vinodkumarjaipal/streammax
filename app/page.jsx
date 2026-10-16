@@ -48,11 +48,11 @@ export default async function Home() {
   const heroOverview = heroItem?.overview || "Stream and download the latest global blockbuster hits.";
 
   return (
-    <main className="min-h-screen bg-[#0b0c10] text-gray-200 overflow-x-hidden pb-20">
+    <div className="min-h-screen bg-[#0b0c10] text-gray-200 overflow-x-hidden pb-20">
       
       {/* HERO BANNER SECTION */}
       {heroItem && (
-        <div className="relative w-full h-[65vh] sm:h-[80vh] md:h-[88vh] mb-8 md:mb-12">
+        <div className="relative w-full h-[65vh] sm:h-[80vh] md:h-[88vh]">
           {/* Background Image */}
           <div className="absolute inset-0">
             <Image
@@ -71,8 +71,8 @@ export default async function Home() {
 
           {/* Hero Content */}
           <div className="absolute inset-0 z-20 flex flex-col justify-end px-4 sm:px-8 md:px-12 lg:px-16 pb-16 md:pb-24 w-full md:w-3/4 lg:w-1/2">
-            <span className="text-[#dc2626] font-black tracking-[0.2em] text-xs sm:text-sm mb-2 uppercase drop-shadow-md">
-              StreamMax Exclusive
+            <span className="text-[#dc2626] font-black tracking-[0.12em] text-xs sm:text-sm mb-2 drop-shadow-md">
+              StreamMax exclusive
             </span>
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white mb-4 leading-tight drop-shadow-2xl line-clamp-2">
               {heroTitle}
@@ -108,56 +108,48 @@ export default async function Home() {
       )}
 
       {/* CONTENT ROWS */}
-      <div className="relative z-20 -mt-6 sm:-mt-12">
+      <div className="relative z-20 pt-4">
         <ContentRow 
           title="Trending Worldwide" 
-          badge="Multi-Audio" 
           items={trending} 
         />
         
         <ContentRow 
           title="Blockbuster Hollywood" 
-          badge="English / Dubbed" 
           items={hollywood} 
         />
 
         <ContentRow 
           title="K-Dramas & Asian Hits" 
-          badge="Hindi Dubbed / Subbed" 
           items={kdramas} 
         />
 
         <ContentRow 
           title="Turkish Masterpieces" 
-          badge="Urdu / Hindi Dubbed" 
           items={turkish} 
         />
 
         <ContentRow 
           title="Spanish & European Thrillers" 
-          badge="Multi-Audio" 
           items={spanish} 
         />
 
         <ContentRow 
           title="Bollywood Blockbusters" 
-          badge="Hindi" 
           items={bollywood} 
         />
 
         <ContentRow 
           title="Indian Web Series" 
-          badge="Hindi" 
           items={indianTv} 
         />
 
         <ContentRow 
           title="Anime World" 
-          badge="Dubbed / Subbed" 
           items={anime} 
         />
       </div>
 
-    </main>
+    </div>
   );
 }

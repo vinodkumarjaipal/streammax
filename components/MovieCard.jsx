@@ -65,20 +65,11 @@ export default function MovieCard({ item }) {
         </div>
       )}
 
-      {/* Dynamic Badge System (Top Left) */}
+      {/* Origin Badge */}
       <div className="absolute top-2.5 left-2.5 flex flex-col items-start gap-1.5 z-20">
-        {showMultiAudioBadge && (
-          <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/10 shadow-[0_0_12px_rgba(220,38,38,0.6)] text-white">
-            <span className="text-xs">🎙️</span>
-            <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300">
-              {isHighlyPopular && !isAnime && !isKDrama ? "🌐 Dubbed" : "Multi-Audio"}
-            </span>
-          </div>
-        )}
-
         <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 shadow-lg">
           <span className="text-[10px]">{origin.flag}</span>
-          <span className="text-[8px] sm:text-[9px] font-bold text-gray-200 uppercase tracking-widest">
+          <span className="text-[8px] sm:text-[9px] font-bold text-gray-200 uppercase tracking-widest bg-none">
             {origin.label}
           </span>
         </div>
@@ -95,11 +86,17 @@ export default function MovieCard({ item }) {
       </div>
 
       {/* Hover Reveal Overlay (Glassmorphism) */}
-      <div className="absolute inset-0 z-30 bg-black/70 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+      <div className="absolute inset-0 z-30 bg-black/70 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
         <div className="transform translate-y-3 group-hover:translate-y-0 transition-transform duration-300 ease-out">
           <h3 className="text-xs sm:text-sm font-black text-white line-clamp-2 mb-2">
             {title}
           </h3>
+
+          {showMultiAudioBadge && (
+            <p className="text-[10px] sm:text-xs text-gray-200 font-semibold mb-2">
+              {isHighlyPopular && !isAnime && !isKDrama ? "Dubbed audio available" : "Multi-audio available"}
+            </p>
+          )}
           
           <div className="inline-flex items-center gap-1.5 bg-[#dc2626]/20 border border-[#dc2626]/50 rounded-lg p-1.5 backdrop-blur-md w-full">
             <span className="text-[#dc2626] text-xs">▶</span>
