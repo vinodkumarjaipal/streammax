@@ -2,10 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getImdbId } from "@/lib/ids";
-import {
-  buildAuthorizedDownloadUrl,
-  buildServerConfigs,
-} from "@/lib/servers";
+import { buildServerConfigs } from "@/lib/servers";
 
 function PlayerSkeleton({ message }) {
   return (
@@ -42,6 +39,7 @@ export default function RealStreamPlayer({
   const [statusMessage, setStatusMessage] = useState("");
   const [copied, setCopied] = useState(false);
   const timeoutRef = useRef(null);
+  const shareLabelTimeoutRef = useRef(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -163,30 +161,55 @@ export default function RealStreamPlayer({
     [activeServer, servers]
   );
 
-  const copyCurrentStream = useCallback(() => {
-    if (!activeServerUrl || !navigator.clipboard) return;
-
-    navigator.clipboard.writeText(activeServerUrl).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  }, [activeServerUrl]);
-
   const handleDownload = useCallback(() => {
-    const downloadUrl = buildAuthorizedDownloadUrl({
-      tmdbId: cleanId,
-      type: normalizedType,
-      season: normalizedSeason,
-      episode: normalizedEpisode,
-    });
+    if (!cleanId) return;
 
-    if (!downloadUrl) {
-      setStatusMessage("Downloads are not configured for this site.");
-      return;
+    const downloadApiUrl = `/api/download?tmdbId=${encodeURIComponent(
+      cleanId
+    )}&type=${encodeURIComponent(
+      normalizedType
+    )}&season=${encodeURIComponent(
+      normalizedSeason
+    )}&episode=${encodeURIComponent(normalizedEpisode)}`;
+
+    window.open(downloadApiUrl, "_blank", "noopener,noreferrer");
+  }, [cleanId, normalizedEpisode, normalizedSeason, normalizedType]);
+
+  const handleShare = useCallback(async () => {
+    const shareUrl = window.location.href;
+    const shareData = {
+      title,
+      text: `Watch ${title} on StreamMax`,
+      url: shareUrl,
+    };
+    const userAgent = navigator.userAgent || "";
+    const isIPad =
+      navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+    const isMobileOrTablet =
+      /Android|iPhone|iPad|iPod|IEMobile|Opera Mini|Mobile/i.test(userAgent) ||
+      isIPad;
+
+    if (isMobileOrTablet && typeof navigator.share === "function") {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (error) {
+        if (error?.name === "AbortError") return;
+      }
     }
 
-    window.open(downloadUrl, "_blank", "noopener,noreferrer");
-  }, [cleanId, normalizedEpisode, normalizedSeason, normalizedType]);
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setShareLabel("Link Copied!");
+      clearTimeout(shareLabelTimeoutRef.current);
+      shareLabelTimeoutRef.current = setTimeout(
+        () => setShareLabel("Share"),
+        2000
+      );
+    } catch {
+      setStatusMessage("Unable to share this link. Please copy the page URL.");
+    }
+  }, [title]);
 
   if (!cleanId) {
     return (
@@ -255,22 +278,22 @@ export default function RealStreamPlayer({
         </p>
       )}
 
-      <div className="flex flex-col gap-4 rounded-2xl border border-gray-800/80 bg-[#12141a]/80 p-4 shadow-lg lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex w-full gap-2 overflow-x-auto pb-2 custom-scrollbar lg:pb-0">
+      <div className="grid min-w-0 gap-4 rounded-2xl border border-gray-800/80 bg-[#12141a]/80 p-3 shadow-lg sm:p-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+        <div className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-2">
           {servers.map((server) => (
             <button
               key={server.id}
               type="button"
               disabled={!server.url}
               onClick={() => handleServerSwitch(server.id)}
-              className={`min-w-[130px] rounded-xl border px-4 py-2 transition-all ${
+              className={`min-w-0 rounded-xl border px-2 py-2 transition-all sm:px-3 ${
                 activeServer === server.id
                   ? "border-[#ef4444] bg-[#ef4444] text-white"
                   : "border-gray-700 bg-[#0f1014] text-gray-300 hover:border-gray-500"
               } disabled:cursor-not-allowed disabled:opacity-40`}
             >
-              <span className="block text-xs font-bold sm:text-sm">{server.name}</span>
-              <span className="mt-0.5 block text-[9px] font-semibold uppercase tracking-wider">
+              <span className="block truncate text-xs font-bold sm:text-sm">{server.name}</span>
+              <span className="mt-0.5 block truncate text-[9px] font-semibold uppercase tracking-wider">
                 {server.url ? server.badge : "Not configured"}
               </span>
             </button>
