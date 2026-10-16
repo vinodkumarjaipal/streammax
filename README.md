@@ -1,3 +1,6 @@
+### 🍿Banner & thumbnail
+![StreamMax Homepage](assets/banner.png)
+
 # 🎬 StreamMax — Enterprise Movie, TV & Anime Streaming Platform
 
 <div align="center">
