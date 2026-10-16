@@ -20,8 +20,9 @@ function buildStreamUrl(serverNumber, type, id, season, episode) {
         ? `https://vidsrc.cc/v2/embed/${type}/${id}/${season}/${episode}`
         : `https://vidsrc.cc/v2/embed/${type}/${id}`;
     case 3:
+      // FIX: Changed &s= to ?s= for proper query param parsing
       return type === "tv"
-        ? `https://www.2embed.cc/embedtv/${id}&s=${season}&e=${episode}`
+        ? `https://www.2embed.cc/embedtv/${id}?s=${season}&e=${episode}`
         : `https://www.2embed.cc/embed/${id}`;
     case 4:
       return type === "tv"
@@ -61,8 +62,14 @@ export default function RealStreamPlayer({
   const normalizedEpisode = Number(episode) || 1;
 
   const [activeServer, setActiveServer] = useState("server1");
+
+  // FIX: 6-Second Safety Timeout to prevent permanent loading overlay
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(true), 0);
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 6000);
+
     return () => clearTimeout(timer);
   }, [cleanId, normalizedSeason, normalizedEpisode, activeServer]);
 
@@ -103,16 +110,6 @@ export default function RealStreamPlayer({
     [activeServer]
   );
 
-  const handleIframeError = useCallback(() => {
-    const currentIndex = servers.findIndex((server) => server.id === activeServer);
-    const nextServer = servers[(currentIndex + 1) % servers.length];
-
-    if (nextServer && nextServer.id !== activeServer) {
-      setIsLoading(true);
-      setActiveServer(nextServer.id);
-    }
-  }, [activeServer, servers]);
-
   const copyCurrentStream = useCallback(() => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
       navigator.clipboard.writeText(activeServerConfig.url).then(() => {
@@ -136,8 +133,9 @@ export default function RealStreamPlayer({
   return (
     <div className="w-full max-w-7xl mx-auto flex flex-col gap-4 my-6">
       <div className="relative w-full aspect-video bg-black overflow-hidden rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.8)] border border-gray-800 group">
+        {/* FIX: Added pointer-events-none so touches go directly to video */}
         {isLoading && (
-          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm text-gray-400">
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm text-gray-400 pointer-events-none">
             <div className="w-12 h-12 border-4 border-gray-800 border-t-[#ef4444] rounded-full animate-spin mb-4" />
             <p className="text-sm font-bold tracking-widest uppercase text-white">
               Connecting to {activeServerConfig.name}...
@@ -153,7 +151,6 @@ export default function RealStreamPlayer({
           src={activeServerConfig.url}
           title={`Stream ${title}`}
           onLoad={() => setIsLoading(false)}
-          onError={handleIframeError}
           className={`absolute top-0 left-0 w-full h-full border-0 z-10 bg-transparent transition-opacity duration-300 ${
             isLoading ? "opacity-0" : "opacity-100"
           }`}
@@ -224,7 +221,6 @@ export default function RealStreamPlayer({
           </button>
         </div>
       </div>
-
     </div>
   );
 }
