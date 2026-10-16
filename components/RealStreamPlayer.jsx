@@ -234,7 +234,7 @@ export default function RealStreamPlayer({
         {activeServerConfig?.url && !isResolvingId && (
           <iframe
             key={`${activeServerConfig.id}-${cleanId}-${imdbId || "pending"}-${normalizedSeason}-${normalizedEpisode}`}
-            src={`/api/embed?url=${encodeURIComponent(activeServerConfig.url)}`}
+            src= {activeServerConfig.url}
             title={`Stream ${title}`}
             onLoad={handleLoaded}
             onError={handleIframeError}
