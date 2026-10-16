@@ -15,8 +15,8 @@ export default function VideoPlayer({
 
   return (
     <RealStreamPlayer
-      tmdbId={targetId}
-      mediaType={type}
+      id={targetId}
+      type={type}
       season={season}
       episode={episode}
       title={title}

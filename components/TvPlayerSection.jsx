@@ -25,8 +25,8 @@ export default function TvPlayerSection({ tvId, seasons = [], title = "Series" }
     <div className="w-full flex flex-col items-center">
       {/* EMBEDDED REAL STREAM PLAYER */}
       <RealStreamPlayer
-        tmdbId={tvId}
-        mediaType="tv"
+        id={tvId}
+        type="tv"
         season={selectedSeason}
         episode={selectedEpisode}
         title={title}

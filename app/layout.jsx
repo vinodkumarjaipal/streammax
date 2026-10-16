@@ -3,7 +3,7 @@ import Navbar from "@/components/Navbar";
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://streammax-official.vercel.app"),
-  referrer: "origin-when-cross-origin",
+  referrer: "no-referrer",
   title: {
     default: "StreamMax - Watch Movies, TV Shows & Anime in HD",
     template: "%s | StreamMax",

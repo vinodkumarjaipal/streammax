@@ -5,18 +5,11 @@
 
 const BASE_URL = "https://api.themoviedb.org/3";
 
-// Key rotation pool for high-availability
-const RAW_KEYS = [
-  process.env.TMDB_KEY_1,
-  process.env.TMDB_KEY_2,
-  process.env.TMDB_API_KEY,
-  process.env.NEXT_PUBLIC_TMDB_KEY_1,
-  process.env.NEXT_PUBLIC_TMDB_KEY_2,
-  process.env.NEXT_PUBLIC_TM_DB_KEY_1,
-  process.env.NEXT_PUBLIC_TMDB_API_KEY,
-  "2cada65d0ee08aa1b49b8ddd5e0bbdad", // Verified reliable fallback key
-  "9d3775384f4c3fd4a2891662c0f1e26d",
-];
+const RAW_KEYS = [1, 2, 3, 4].map(
+  (number) =>
+    process.env[`TMDB_KEY_${number}`] ||
+    process.env[`NEXT_PUBLIC_TMDB_KEY_${number}`]
+);
 
 export const TMDB_KEYS = RAW_KEYS
   .map((k) => k?.trim().replace(/^["']|["']$/g, ""))
@@ -32,7 +25,6 @@ function getActiveKey() {
 function rotateKey() {
   if (TMDB_KEYS.length > 1) {
     activeKeyIndex = (activeKeyIndex + 1) % TMDB_KEYS.length;
-    console.warn(`[TMDB Rotation]: Switched to key index ${activeKeyIndex}`);
   }
 }
 
@@ -59,8 +51,7 @@ export function getFullLanguageName(code) {
 async function fetchFromTMDB(endpoint, params = {}) {
   const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
 
-  // Try available keys if a call encounters rate-limiting or auth failure
-  const maxAttempts = Math.min(3, TMDB_KEYS.length || 1);
+  const maxAttempts = Math.min(2, TMDB_KEYS.length || 1);
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const key = getActiveKey();

@@ -1,46 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getImdbId } from "@/lib/ids";
+import {
+  buildAuthorizedDownloadUrl,
+  buildServerConfigs,
+} from "@/lib/servers";
 
-const SERVER_BADGES = [
-  "Multi-Audio / Hindi",
-  "Fast Multi-Lang",
-  "High Uptime",
-  "Ultra Fast",
-];
-
-function buildStreamUrl(serverNumber, type, id, season, episode) {
-  switch (serverNumber) {
-    case 1:
-      return type === "tv"
-        ? `https://player.autoembed.cc/embed/${type}/${id}/${season}/${episode}`
-        : `https://player.autoembed.cc/embed/${type}/${id}`;
-    case 2:
-      return type === "tv"
-        ? `https://vidsrc.cc/v2/embed/${type}/${id}/${season}/${episode}`
-        : `https://vidsrc.cc/v2/embed/${type}/${id}`;
-    case 3:
-      // FIX: Changed &s= to ?s= for proper query param parsing
-      return type === "tv"
-        ? `https://www.2embed.cc/embedtv/${id}?s=${season}&e=${episode}`
-        : `https://www.2embed.cc/embed/${id}`;
-    case 4:
-      return type === "tv"
-        ? `https://vidsrc.me/embed/${type}?tmdb=${id}&season=${season}&episode=${episode}`
-        : `https://vidsrc.me/embed/${type}?tmdb=${id}`;
-    default:
-      return "";
-  }
-}
-
-function buildDownloadUrl(type, id, season, episode, gateway) {
-  const route = type === "tv" ? `${id}/${season}/${episode}` : id;
-
-  if (gateway === "alternative") {
-    return `https://vidsrc.net/download/${type === "tv" ? "tv" : "movie"}/${route}`;
-  }
-
-  return `https://dl.vidsrc.vip/${type === "tv" ? "tv" : "movie"}/${route}`;
+function PlayerSkeleton({ message }) {
+  return (
+    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black text-gray-400">
+      <div className="w-12 h-12 border-4 border-gray-800 border-t-[#ef4444] rounded-full animate-spin mb-4" />
+      <p className="text-sm font-bold tracking-widest uppercase text-white">
+        {message}
+      </p>
+    </div>
+  );
 }
 
 export default function RealStreamPlayer({
@@ -52,172 +27,271 @@ export default function RealStreamPlayer({
   tmdbId,
   mediaType,
 }) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
-
   const rawId = String(id || tmdbId || "");
   const cleanId = rawId.replace(/^omdb_|^tvmaze_|^mal_/, "");
-  const normalizedType = type === "tv" || mediaType === "tv" ? "tv" : "movie";
+  const normalizedType =
+    type === "tv" || mediaType === "tv" ? "tv" : "movie";
   const normalizedSeason = Number(season) || 1;
   const normalizedEpisode = Number(episode) || 1;
 
+  const [imdbId, setImdbId] = useState(null);
+  const [resolvedKey, setResolvedKey] = useState("");
   const [activeServer, setActiveServer] = useState("server1");
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasLoadError, setHasLoadError] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
+  const [copied, setCopied] = useState(false);
+  const timeoutRef = useRef(null);
 
-  // FIX: 6-Second Safety Timeout to prevent permanent loading overlay
   useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 6000);
+    let cancelled = false;
 
-    return () => clearTimeout(timer);
-  }, [cleanId, normalizedSeason, normalizedEpisode, activeServer]);
+    if (!cleanId) {
+      return undefined;
+    }
+
+    getImdbId(cleanId, normalizedType).then((resolvedId) => {
+      if (!cancelled) {
+        setImdbId(resolvedId);
+        setResolvedKey(`${normalizedType}:${cleanId}`);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [cleanId, normalizedType]);
+
+  const isResolvingId =
+    Boolean(cleanId) && resolvedKey !== `${normalizedType}:${cleanId}`;
 
   const servers = useMemo(
     () =>
-      [1, 2, 3, 4].map((serverNumber) => ({
-        id: `server${serverNumber}`,
-        name: `Server ${serverNumber}`,
-        badge: SERVER_BADGES[serverNumber - 1],
-        url: buildStreamUrl(
-          serverNumber,
-          normalizedType,
-          cleanId,
-          normalizedSeason,
-          normalizedEpisode
-        ),
-      })),
-    [cleanId, normalizedEpisode, normalizedSeason, normalizedType]
+      buildServerConfigs({
+        tmdbId: cleanId,
+        imdbId,
+        type: normalizedType,
+        season: normalizedSeason,
+        episode: normalizedEpisode,
+      }),
+    [cleanId, imdbId, normalizedEpisode, normalizedSeason, normalizedType]
   );
 
+  const availableServers = useMemo(
+    () => servers.filter((server) => server.url),
+    [servers]
+  );
   const activeServerConfig =
     servers.find((server) => server.id === activeServer) || servers[0];
-  const downloadUrl = buildDownloadUrl(
-    normalizedType,
-    cleanId,
-    normalizedSeason,
+  const activeServerUrl = activeServerConfig?.url || "";
+
+  const switchToNextServer = useCallback(() => {
+    const currentIndex = availableServers.findIndex(
+      (server) => server.id === activeServer
+    );
+
+    if (availableServers.length < 2 || currentIndex < 0) {
+      setHasLoadError(true);
+      setIsLoading(false);
+      setStatusMessage("Source not available - try another server");
+      return;
+    }
+
+    const nextServer =
+      availableServers[(currentIndex + 1) % availableServers.length];
+    setActiveServer(nextServer.id);
+    setIsLoading(true);
+    setHasLoadError(false);
+    setStatusMessage(`Switching to ${nextServer.name}...`);
+  }, [activeServer, availableServers]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(true);
+      setHasLoadError(false);
+      setStatusMessage("");
+      setActiveServer((current) =>
+        servers.some((server) => server.id === current && server.url)
+          ? current
+          : availableServers[0]?.id || "server1"
+      );
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [
+    availableServers,
     normalizedEpisode,
-    "primary"
-  );
+    normalizedSeason,
+    normalizedType,
+    servers,
+  ]);
+
+  useEffect(() => {
+    if (!activeServerUrl || isResolvingId) return undefined;
+
+    timeoutRef.current = setTimeout(() => {
+      setStatusMessage(`${activeServerConfig.name} timed out. Trying another source...`);
+      switchToNextServer();
+    }, 10000);
+
+    return () => clearTimeout(timeoutRef.current);
+  }, [activeServerConfig, activeServerUrl, isResolvingId, switchToNextServer]);
+
+  const handleLoaded = useCallback(() => {
+    clearTimeout(timeoutRef.current);
+    setIsLoading(false);
+    setHasLoadError(false);
+    setStatusMessage("");
+  }, []);
+
+  const handleIframeError = useCallback(() => {
+    clearTimeout(timeoutRef.current);
+    setStatusMessage(`${activeServerConfig.name} failed. Trying another source...`);
+    switchToNextServer();
+  }, [activeServerConfig.name, switchToNextServer]);
 
   const handleServerSwitch = useCallback(
     (serverId) => {
-      if (serverId !== activeServer) {
-        setIsLoading(true);
-        setActiveServer(serverId);
-      }
+      const server = servers.find((item) => item.id === serverId);
+      if (!server?.url || serverId === activeServer) return;
+      clearTimeout(timeoutRef.current);
+      setActiveServer(serverId);
+      setIsLoading(true);
+      setHasLoadError(false);
+      setStatusMessage(`Connecting to ${server.name}...`);
     },
-    [activeServer]
+    [activeServer, servers]
   );
 
   const copyCurrentStream = useCallback(() => {
-    if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(activeServerConfig.url).then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      });
+    if (!activeServerUrl || !navigator.clipboard) return;
+
+    navigator.clipboard.writeText(activeServerUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [activeServerUrl]);
+
+  const handleDownload = useCallback(() => {
+    const downloadUrl = buildAuthorizedDownloadUrl({
+      tmdbId: cleanId,
+      type: normalizedType,
+      season: normalizedSeason,
+      episode: normalizedEpisode,
+    });
+
+    if (!downloadUrl) {
+      setStatusMessage("Downloads are not configured for this site.");
+      return;
     }
-  }, [activeServerConfig.url]);
+
+    window.open(downloadUrl, "_blank", "noopener,noreferrer");
+  }, [cleanId, normalizedEpisode, normalizedSeason, normalizedType]);
 
   if (!cleanId) {
     return (
       <div className="w-full aspect-video bg-[#1a1c23] rounded-2xl flex flex-col items-center justify-center border border-gray-800 text-gray-400 p-6 shadow-xl">
-        <span className="text-3xl mb-2">⚠️</span>
-        <p className="font-semibold">
-          Media ID missing. Unable to initialize streaming player.
-        </p>
+        <p className="font-semibold">Media ID missing. Unable to initialize player.</p>
+      </div>
+    );
+  }
+
+  if (!isResolvingId && !imdbId && !availableServers.length) {
+    return (
+      <div className="w-full aspect-video bg-[#1a1c23] rounded-2xl flex flex-col items-center justify-center border border-gray-800 text-gray-400 p-6 shadow-xl">
+        <p className="font-semibold text-white">Source not available.</p>
+        <p className="text-sm mt-2">This title has no configured playback source.</p>
       </div>
     );
   }
 
   return (
     <div className="w-full max-w-7xl mx-auto flex flex-col gap-4 my-6">
-      <div className="relative w-full aspect-video bg-black overflow-hidden rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.8)] border border-gray-800 group">
-        {/* FIX: Added pointer-events-none so touches go directly to video */}
-        {isLoading && (
-          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm text-gray-400 pointer-events-none">
-            <div className="w-12 h-12 border-4 border-gray-800 border-t-[#ef4444] rounded-full animate-spin mb-4" />
-            <p className="text-sm font-bold tracking-widest uppercase text-white">
-              Connecting to {activeServerConfig.name}...
-            </p>
-            <p className="text-xs mt-2 text-gray-500 font-medium">
-              If stream does not load in 5s, switch to another server below
-            </p>
+      <div className="relative w-full aspect-video bg-black overflow-hidden rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.8)] border border-gray-800">
+        {(isResolvingId || isLoading) && (
+          <PlayerSkeleton
+            message={
+              isResolvingId
+                ? "Resolving media ID..."
+                : `Connecting to ${activeServerConfig?.name || "source"}...`
+            }
+          />
+        )}
+
+        {hasLoadError && !isLoading && (
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black text-gray-300">
+            <p className="font-semibold text-white">Source not available - try another server</p>
+            <button
+              type="button"
+              onClick={switchToNextServer}
+              className="mt-4 rounded-lg bg-[#dc2626] px-4 py-2 text-sm font-bold text-white"
+            >
+              Try another server
+            </button>
           </div>
         )}
 
-        <iframe
-          key={`${activeServerConfig.id}-${cleanId}-${normalizedSeason}-${normalizedEpisode}`}
-          src={activeServerConfig.url}
-          title={`Stream ${title}`}
-          onLoad={() => setIsLoading(false)}
-          className={`absolute top-0 left-0 w-full h-full border-0 z-10 bg-transparent transition-opacity duration-300 ${
-            isLoading ? "opacity-0" : "opacity-100"
-          }`}
-          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
-          allowFullScreen
-          referrerPolicy="origin-when-cross-origin"
-          loading="lazy"
-        />
+        {activeServerConfig?.url && !isResolvingId && (
+          <iframe
+            key={`${activeServerConfig.id}-${cleanId}-${imdbId || "pending"}-${normalizedSeason}-${normalizedEpisode}`}
+            src={`/api/embed?url=${encodeURIComponent(activeServerConfig.url)}`}
+            title={`Stream ${title}`}
+            onLoad={handleLoaded}
+            onError={handleIframeError}
+            className={`absolute inset-0 h-full w-full border-0 bg-transparent transition-opacity duration-300 ${
+              isLoading || isResolvingId ? "opacity-0" : "opacity-100"
+            }`}
+            allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
+            allowFullScreen
+            referrerPolicy="origin"
+            loading="lazy"
+          />
+        )}
       </div>
 
-      <div className="flex flex-col lg:flex-row items-center justify-between gap-4 p-4 md:p-5 bg-[#12141a]/80 backdrop-blur-xl rounded-2xl border border-gray-800/80 shadow-lg">
-        <div className="flex-1 w-full overflow-x-auto custom-scrollbar pb-2 lg:pb-0">
-          <div className="flex items-center gap-2 min-w-max">
-            {servers.map((server) => {
-              const isActive = activeServer === server.id;
+      {statusMessage && (
+        <p role="status" className="text-center text-sm text-amber-300">
+          {statusMessage}
+        </p>
+      )}
 
-              return (
-                <button
-                  key={server.id}
-                  type="button"
-                  onClick={() => handleServerSwitch(server.id)}
-                  className={`relative flex flex-col items-center px-4 py-2 rounded-xl border transition-all duration-200 min-w-[130px] sm:min-w-[145px] ${
-                    isActive
-                      ? "bg-[#ef4444] border-[#ef4444] shadow-[0_0_15px_rgba(239,68,68,0.5)]"
-                      : "bg-[#0f1014] border-gray-700 hover:border-gray-500 hover:bg-gray-800 text-gray-300"
-                  }`}
-                >
-                  <span
-                    className={`text-xs sm:text-sm font-bold tracking-wide ${
-                      isActive ? "text-white" : "text-gray-300"
-                    }`}
-                  >
-                    {server.name}
-                  </span>
-                  <span
-                    className={`text-[9px] sm:text-[10px] mt-0.5 font-semibold uppercase tracking-wider ${
-                      isActive ? "text-red-100" : "text-gray-500"
-                    }`}
-                  >
-                    {server.badge}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+      <div className="flex flex-col gap-4 rounded-2xl border border-gray-800/80 bg-[#12141a]/80 p-4 shadow-lg lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex w-full gap-2 overflow-x-auto pb-2 custom-scrollbar lg:pb-0">
+          {servers.map((server) => (
+            <button
+              key={server.id}
+              type="button"
+              disabled={!server.url}
+              onClick={() => handleServerSwitch(server.id)}
+              className={`min-w-[130px] rounded-xl border px-4 py-2 transition-all ${
+                activeServer === server.id
+                  ? "border-[#ef4444] bg-[#ef4444] text-white"
+                  : "border-gray-700 bg-[#0f1014] text-gray-300 hover:border-gray-500"
+              } disabled:cursor-not-allowed disabled:opacity-40`}
+            >
+              <span className="block text-xs font-bold sm:text-sm">{server.name}</span>
+              <span className="mt-0.5 block text-[9px] font-semibold uppercase tracking-wider">
+                {server.url ? server.badge : "Not configured"}
+              </span>
+            </button>
+          ))}
         </div>
 
-        <div className="flex items-center gap-3 w-full lg:w-auto shrink-0">
-          <a
-            href={downloadUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-sm transition-all shadow-[0_0_15px_rgba(16,185,129,0.25)]"
+        <div className="flex w-full shrink-0 items-center gap-3 lg:w-auto">
+          <button
+            type="button"
+            onClick={handleDownload}
+            className="flex-1 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-emerald-500 lg:flex-none"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            Download HD
-          </a>
-
+            Download
+          </button>
           <button
             type="button"
             onClick={copyCurrentStream}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-[#0f1014] hover:bg-gray-800 border border-gray-700 rounded-xl text-gray-300 hover:text-white font-medium text-xs sm:text-sm transition-colors"
-            title="Copy current stream link"
+            disabled={!activeServerUrl}
+            className="rounded-xl border border-gray-700 bg-[#0f1014] px-4 py-2.5 text-xs font-medium text-gray-300 hover:bg-gray-800 disabled:opacity-40"
           >
-            {copied ? "✓ Copied" : "🔗 Share"}
+            {copied ? "Copied" : "Share"}
           </button>
         </div>
       </div>

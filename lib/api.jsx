@@ -3,7 +3,7 @@
  * High-performance, fault-tolerant data architecture combining TMDB, OMDb, TVmaze, and Jikan.
  */
 
-import { TMDB_KEYS } from "./tmdb";
+import { fetchTMDB } from "./tmdb";
 
 // ============================================================================
 // CONFIGURATION & ENVIRONMENT KEYS
@@ -11,7 +11,6 @@ import { TMDB_KEYS } from "./tmdb";
 
 const OMDB_KEY = (process.env.OMDB_API_KEY || "8e4e5ba9").trim().replace(/^["']|["']$/g, "");
 
-const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const OMDB_BASE_URL = "https://www.omdbapi.com";
 const TVMAZE_BASE_URL = "https://api.tvmaze.com";
 const JIKAN_BASE_URL = "https://api.jikan.moe/v4";
@@ -19,18 +18,6 @@ const JIKAN_BASE_URL = "https://api.jikan.moe/v4";
 // ============================================================================
 // ROTATING FETCH & UTILITY HELPERS
 // ============================================================================
-
-let keyIdx = 0;
-function getTmdbKey() {
-  if (!TMDB_KEYS || TMDB_KEYS.length === 0) return "2cada65d0ee08aa1b49b8ddd5e0bbdad";
-  return TMDB_KEYS[keyIdx % TMDB_KEYS.length];
-}
-
-function rotateKey() {
-  if (TMDB_KEYS && TMDB_KEYS.length > 1) {
-    keyIdx = (keyIdx + 1) % TMDB_KEYS.length;
-  }
-}
 
 /**
  * Universal safe fetcher wrapped in a try/catch with timeout and Next.js revalidation cache
@@ -61,36 +48,6 @@ async function safeFetch(url, options = {}, timeoutMs = 7000) {
     }
     return null;
   }
-}
-
-/**
- * TMDB Fetch Engine with automatic Key Rotation
- */
-async function fetchTMDBWithRotation(endpoint, paramsStr = "") {
-  const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
-  const maxAttempts = Math.min(3, TMDB_KEYS.length || 1);
-
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    const key = getTmdbKey();
-    try {
-      const url = new URL(`${TMDB_BASE_URL}${cleanEndpoint}`);
-      url.searchParams.set("api_key", key);
-
-      if (paramsStr) {
-        const customParams = new URLSearchParams(paramsStr.replace(/^\?/, ""));
-        customParams.forEach((value, k) => url.searchParams.set(k, value));
-      }
-
-      const data = await safeFetch(url.toString(), {}, 8000);
-      if (data && (data.results || data.id)) return data;
-
-      rotateKey();
-    } catch (err) {
-      rotateKey();
-    }
-  }
-
-  return null;
 }
 
 // ============================================================================
@@ -234,7 +191,7 @@ export async function searchGlobalContent(query) {
 
   try {
     // 1. Primary Search via TMDB
-    const tmdbData = await fetchTMDBWithRotation("/search/multi", `query=${cleanQuery}&include_adult=false`);
+    const tmdbData = await fetchTMDB("/search/multi", `query=${cleanQuery}&include_adult=false`);
     
     let tmdbResults = [];
     if (tmdbData?.results && Array.isArray(tmdbData.results)) {
@@ -293,7 +250,7 @@ export async function searchGlobalContent(query) {
  */
 export async function getGlobalTrending() {
   const [tmdbTrending, jikanTop] = await Promise.allSettled([
-    fetchTMDBWithRotation("/trending/all/day"),
+    fetchTMDB("/trending/all/day"),
     safeFetch(`${JIKAN_BASE_URL}/top/anime?limit=6`),
   ]);
 
@@ -346,7 +303,7 @@ export async function getItemDetails(id, mediaType = "movie") {
 
   // Standard TMDB details
   const targetType = mediaType === "anime" ? "tv" : mediaType;
-  const tmdbDetails = await fetchTMDBWithRotation(
+  const tmdbDetails = await fetchTMDB(
     `/${targetType}/${id}`,
     "append_to_response=credits,recommendations,similar,external_ids,videos"
   );
