@@ -25,20 +25,14 @@ const nextConfig = {
       {
         source: "/(.*)",
         headers: [
-          {
-            key: "X-Frame-Options",
-            value: "SAMEORIGIN", // ✅ DENY se badla — apna iframe allow
-          },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          {
-            key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=()",
-          },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
           {
             key: "Content-Security-Policy",
             value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://image.tmdb.org https://*.tmdb.org https://static.tvmaze.com https://cdn.myanimelist.net https://m.media-amazon.com https://ia.media-imdb.com; media-src 'self' blob: data: https:; connect-src 'self' https://api.themoviedb.org https://*.tmdb.org; font-src 'self' data:; frame-src 'self'; frame-ancestors 'self';", // ✅ 'none' → 'self', frame-src add kiya
+              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https:; media-src 'self' blob: data: https:; connect-src 'self' https://api.themoviedb.org https://*.tmdb.org; font-src 'self' data:; frame-src 'self' https:; frame-ancestors 'self';", // ✅ frame-src mein https: add kiya
           },
         ],
       },
