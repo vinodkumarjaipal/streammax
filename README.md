@@ -1,3 +1,10 @@
+<div align="center">
+
+# 🎬 StreamMax — Enterprise Streaming & Download Platform
+
+![StreamMax Banner](./assets/banner.png)
+
+</div>
 # 🎬 StreamMax — Enterprise Movie, TV & Anime Streaming Platform
 
 <div align="center">
