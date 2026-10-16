@@ -37,7 +37,7 @@ export default function RealStreamPlayer({
   const [isLoading, setIsLoading] = useState(true);
   const [hasLoadError, setHasLoadError] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
-  const [copied, setCopied] = useState(false);
+  const [shareLabel, setShareLabel] = useState("Share");
   const timeoutRef = useRef(null);
   const shareLabelTimeoutRef = useRef(null);
 
@@ -176,6 +176,8 @@ export default function RealStreamPlayer({
   }, [cleanId, normalizedEpisode, normalizedSeason, normalizedType]);
 
   const handleShare = useCallback(async () => {
+    if (!activeServerUrl) return;
+
     const shareUrl = window.location.href;
     const shareData = {
       title,
@@ -209,7 +211,7 @@ export default function RealStreamPlayer({
     } catch {
       setStatusMessage("Unable to share this link. Please copy the page URL.");
     }
-  }, [title]);
+  }, [activeServerUrl, title]);
 
   if (!cleanId) {
     return (
@@ -310,11 +312,12 @@ export default function RealStreamPlayer({
           </button>
           <button
             type="button"
-            onClick={copyCurrentStream}
+            onClick={handleShare}
             disabled={!activeServerUrl}
-            className="rounded-xl border border-gray-700 bg-[#0f1014] px-4 py-2.5 text-xs font-medium text-gray-300 hover:bg-gray-800 disabled:opacity-40"
+            className="rounded-xl border border-gray-700 bg-[#0f1014] px-4 py-2.5 text-xs font-medium text-gray-300 transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-40"
+            aria-label={`Share ${title}`}
           >
-            {copied ? "Copied" : "Share"}
+            {shareLabel}
           </button>
         </div>
       </div>
