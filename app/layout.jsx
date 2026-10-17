@@ -1,8 +1,9 @@
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import { siteUrl } from "@/lib/site";
 
 export const metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://streammax-official.vercel.app"),
+  metadataBase: new URL(siteUrl),
   referrer: "no-referrer",
   title: {
     default: "StreamMax - Watch Movies, TV Shows & Anime in HD",
@@ -25,7 +26,7 @@ export const metadata = {
     },
   },
   alternates: {
-    canonical: "./",
+    canonical: "/",
   },
   openGraph: {
     title: "StreamMax - Watch Movies, TV Shows & Anime in HD",
@@ -39,6 +40,14 @@ export const metadata = {
     card: "summary_large_image",
     title: "StreamMax - Watch Movies, TV Shows & Anime in HD",
     description: "Stream and download blockbuster movies, K-Dramas, Bollywood, Hollywood, anime and Turkish series.",
+  },
+  verification: {
+    ...(process.env.GOOGLE_SITE_VERIFICATION
+      ? { google: process.env.GOOGLE_SITE_VERIFICATION }
+      : {}),
+    ...(process.env.BING_SITE_VERIFICATION
+      ? { other: { "msvalidate.01": process.env.BING_SITE_VERIFICATION } }
+      : {}),
   },
   icons: {
     icon: [

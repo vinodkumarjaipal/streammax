@@ -3,6 +3,11 @@ import MovieCard from "@/components/MovieCard";
 import Link from "next/link";
 
 export const revalidate = 3600;
+export const metadata = {
+  title: "TV Shows",
+  description: "Explore popular and trending TV shows and series on StreamMax.",
+  alternates: { canonical: "/tv-shows" },
+};
 
 export default async function TvCategoryPage({ searchParams }) {
   const resolvedParams = await searchParams;

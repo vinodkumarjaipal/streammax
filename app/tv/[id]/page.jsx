@@ -2,6 +2,42 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { fetchTMDB, getFullLanguageName } from "@/lib/tmdb";
 import TvPlayerSection from "@/components/TvPlayerSection";
+import { absoluteUrl } from "@/lib/site";
+
+export async function generateMetadata({ params }) {
+  const { id } = await params;
+
+  if (!id) {
+    return { title: "TV Show Not Found", robots: { index: false } };
+  }
+
+  try {
+    const show = await fetchTMDB(`/tv/${id}`);
+    const title = show.name || "TV Show";
+    const description =
+      show.overview ||
+      `Discover ${title}, including its rating, cast and storyline on StreamMax.`;
+    const poster = show.poster_path
+      ? `https://image.tmdb.org/t/p/w500${show.poster_path}`
+      : undefined;
+
+    return {
+      title,
+      description,
+      alternates: { canonical: absoluteUrl(`/tv/${id}`) },
+      openGraph: {
+        title: `${title} | StreamMax`,
+        description,
+        type: "video.tv_show",
+        url: absoluteUrl(`/tv/${id}`),
+        ...(poster ? { images: [poster] } : {}),
+      },
+    };
+  } catch (error) {
+    console.error("Error generating TV metadata:", error);
+    return { title: "TV Show Details" };
+  }
+}
 
 export default async function TvShowDetailsPage({ params }) {
   const resolvedParams = await params;

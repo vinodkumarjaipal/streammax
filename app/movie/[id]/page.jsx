@@ -3,6 +3,42 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import VideoPlayer from "@/components/VideoPlayer";
 import { fetchTMDB } from "@/lib/tmdb";
+import { absoluteUrl } from "@/lib/site";
+
+export async function generateMetadata({ params }) {
+  const { id } = await params;
+
+  if (!id) {
+    return { title: "Movie Not Found", robots: { index: false } };
+  }
+
+  try {
+    const movie = await fetchTMDB(`/movie/${id}`);
+    const title = movie.title || "Movie";
+    const description =
+      movie.overview ||
+      `Discover ${title}, including its rating, cast and storyline on StreamMax.`;
+    const poster = movie.poster_path
+      ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+      : undefined;
+
+    return {
+      title,
+      description,
+      alternates: { canonical: absoluteUrl(`/movie/${id}`) },
+      openGraph: {
+        title: `${title} | StreamMax`,
+        description,
+        type: "video.movie",
+        url: absoluteUrl(`/movie/${id}`),
+        ...(poster ? { images: [poster] } : {}),
+      },
+    };
+  } catch (error) {
+    console.error("Error generating movie metadata:", error);
+    return { title: "Movie Details" };
+  }
+}
 
 // Helper function to format runtime into Hours and Minutes (e.g., 2h 15m)
 function formatRuntime(minutes) {

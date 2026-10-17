@@ -1,12 +1,12 @@
-export default function robots() {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://streammax-official.vercel.app";
+import { absoluteUrl } from "@/lib/site";
 
+export default function robots() {
   return {
     rules: {
       userAgent: "*",
       allow: "/",
       disallow: ["/api/"],
     },
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: absoluteUrl("/sitemap.xml"),
   };
 }

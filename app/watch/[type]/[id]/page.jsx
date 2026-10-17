@@ -53,6 +53,10 @@ export async function generateMetadata({ params }) {
       description: overview,
       images: poster ? [poster] : [],
     },
+    robots: {
+      index: false,
+      follow: true,
+    },
   };
 }
 

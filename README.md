@@ -213,3 +213,25 @@ streammax/
 
 This project is licensed under the **MIT License** — feel free to use and modify it for learning and personal deployment.
 
+## Search engine indexing
+
+Before deploying, set these production environment variables:
+
+```env
+# Replace this example with your real public domain.
+NEXT_PUBLIC_SITE_URL=https://your-real-domain.example
+GOOGLE_SITE_VERIFICATION=your-google-search-console-token
+BING_SITE_VERIFICATION=your-bing-webmaster-tools-token
+```
+
+`NEXT_PUBLIC_SITE_URL` must be the canonical HTTPS URL without a trailing slash.
+The verification variables are optional until Google Search Console and Bing
+Webmaster Tools provide their verification tokens.
+
+After deployment, verify that these URLs work:
+
+- `https://your-real-domain.example/robots.txt`
+- `https://your-real-domain.example/sitemap.xml`
+
+Submit the sitemap in Google Search Console and Bing Webmaster Tools, then
+request indexing for the home, category, and important detail pages.

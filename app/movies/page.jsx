@@ -3,6 +3,11 @@ import MovieCard from "@/components/MovieCard";
 import Link from "next/link";
 
 export const revalidate = 3600;
+export const metadata = {
+  title: "Movies",
+  description: "Explore popular and trending movies on StreamMax.",
+  alternates: { canonical: "/movies" },
+};
 
 export default async function MoviesPage({ searchParams }) {
   const resolvedParams = await searchParams;

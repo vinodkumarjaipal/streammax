@@ -3,6 +3,11 @@ import MovieCard from "@/components/MovieCard";
 import Link from "next/link";
 
 export const revalidate = 3600;
+export const metadata = {
+  title: "Anime",
+  description: "Explore anime series and movies on StreamMax.",
+  alternates: { canonical: "/anime" },
+};
 
 export default async function AnimePage({ searchParams }) {
   const resolvedParams = await searchParams;
