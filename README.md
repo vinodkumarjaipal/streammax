@@ -220,11 +220,15 @@ Before deploying, set these production environment variables:
 ```env
 # Replace this example with your real public domain.
 NEXT_PUBLIC_SITE_URL=https://your-real-domain.example
+NEXT_PUBLIC_GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX
 GOOGLE_SITE_VERIFICATION=your-google-search-console-token
 BING_SITE_VERIFICATION=your-bing-webmaster-tools-token
 ```
 
 `NEXT_PUBLIC_SITE_URL` must be the canonical HTTPS URL without a trailing slash.
+`NEXT_PUBLIC_GOOGLE_ANALYTICS_ID` is the Measurement ID from Google Analytics
+and normally starts with `G-`. Analytics is only rendered when this variable is
+present.
 The verification variables are optional until Google Search Console and Bing
 Webmaster Tools provide their verification tokens.
 
