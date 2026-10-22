@@ -3,7 +3,7 @@ import Navbar from "@/components/Navbar";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { siteUrl } from "@/lib/site";
 
-const googleAnalyticsId = process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
+const googleAnalyticsId = "G-LM5DSDRX2F";
 
 export const metadata = {
   metadataBase: new URL(siteUrl),
