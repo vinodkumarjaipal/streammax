@@ -239,3 +239,4 @@ After deployment, verify that these URLs work:
 
 Submit the sitemap in Google Search Console and Bing Webmaster Tools, then
 request indexing for the home, category, and important detail pages.
+
